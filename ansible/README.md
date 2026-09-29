@@ -65,7 +65,7 @@ sudo snap install multipass
 # Buat 2 VM sebagai managed nodes
 multipass launch --name node1 --cpus 1 --memory 512M --disk 5G 22.04
 multipass launch --name node2 --cpus 1 --memory 512M --disk 5G 22.04
-
+multipass launch --name dims --cpus 1 --memory 1G --disk 5G 22.04
 # Cek status VM (catat IP address-nya)
 multipass list
 ```
