@@ -1,4 +1,4 @@
-[# Modul 5 - Cloudsim & Load balancing
+# Modul 5 - Cloudsim & Load balancing
 
 ## Daftar Isi
 
