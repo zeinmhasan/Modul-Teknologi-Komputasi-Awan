@@ -477,7 +477,8 @@ Build pertama membutuhkan beberapa menit karena harus mengunduh image Python, NG
 
 > 📸 **[SCREENSHOT]** Terminal setelah `docker compose up --build` berhasil (seluruh container berjalan)
 >
-> ![docker compose up](img/docker-compose-up.png)
+> <img width="1468" height="270" alt="Screenshot 2026-11-03 145838" src="https://github.com/user-attachments/assets/4e6fa079-7554-4b46-8e0b-4124e4abc983" />
+
 
 ### 5.3 Uji Round Robin
 
@@ -502,7 +503,8 @@ Request dibagi **bergiliran** ke server A → B → C → A → ... Inilah **Rou
 
 > 📸 **[SCREENSHOT]** Output perintah di atas di PowerShell
 >
-> ![round robin powershell](img/round-robin-powershell.png)
+> <img width="1026" height="182" alt="Screenshot 2026-11-03 145907" src="https://github.com/user-attachments/assets/32f4317c-f936-4441-8cab-1b08a6d58c69" />
+
 
 Bisa juga dengan membuka `http://localhost` di browser lalu refresh beberapa kali.
 
@@ -583,7 +585,8 @@ Refresh Mongo Express, dokumen "Budi" akan muncul.
 
 > 📸 **[SCREENSHOT]** Output `/create` dan dokumen baru di Mongo Express
 >
-> ![create](img/create.png)
+> <img width="1328" height="202" alt="Screenshot 2026-11-03 150013" src="https://github.com/user-attachments/assets/01756331-0248-4c3a-99be-dfe251182eef" />
+
 
 ### 6.4 Uji `/get/{id}` — Ambil Satu Data
 
@@ -601,7 +604,8 @@ Invoke-RestMethod http://localhost/get/ngawur
 
 > 📸 **[SCREENSHOT]** Output `/get/{id}` (id valid dan id tidak valid)
 >
-> ![get by id](img/get-by-id.png)
+> <img width="802" height="187" alt="Screenshot 2026-11-03 150042" src="https://github.com/user-attachments/assets/6a559915-b8c4-40e2-be08-138e82bd5543" />
+
 
 ### 6.5 Alternatif: Swagger UI
 
@@ -609,7 +613,8 @@ FastAPI otomatis menyediakan halaman dokumentasi interaktif di **`http://localho
 
 > 📸 **[SCREENSHOT]** Halaman Swagger UI
 >
-> ![swagger](img/swagger.png)
+> <img width="1525" height="909" alt="Screenshot 2026-11-03 150131" src="https://github.com/user-attachments/assets/4e4df4db-29f2-49ec-a873-1d76462ccb28" />
+
 
 ---
 
@@ -657,7 +662,8 @@ Buka **`http://localhost:8089`** di browser.
 
 > 📸 **[SCREENSHOT]** Halaman awal Locust Web UI
 >
-> ![locust home](img/locust-home.png)
+> <img width="1276" height="601" alt="Screenshot 2026-11-03 150313" src="https://github.com/user-attachments/assets/02b87fa0-67b3-4915-833b-343f314c8f71" />
+
 
 **Tab-tab penting di Locust:**
 
@@ -716,21 +722,24 @@ Parameter yang digunakan pada kedua tes:
 
 > 📸 **[SCREENSHOT]** Tab Statistics — Tes A (`localhost:8001`)
 >
-> ![Tes A statistics](img/locust-1server-statistics.png)
+> <img width="1226" height="343" alt="Screenshot 2026-11-02 233527" src="https://github.com/user-attachments/assets/fbaf7ae0-bb3b-4a48-aa6a-8607fb3197cd" />
+
 
 > 📸 **[SCREENSHOT]** Tab Charts — Tes A (`localhost:8001`)
 >
-> ![Tes A charts](img/locust-1server-charts.png)
+> <img width="1209" height="827" alt="Screenshot 2026-11-02 233513" src="https://github.com/user-attachments/assets/9b86b495-1a15-4bd5-b268-4f0e6e7141be" />
+
 
 #### Hasil Tes B — 3 Server (Round Robin)
 
 > 📸 **[SCREENSHOT]** Tab Statistics — Tes B (`localhost`)
 >
-> ![Tes B statistics](img/locust-3server-statistics.png)
+> <img width="1218" height="318" alt="Screenshot 2026-11-02 233856" src="https://github.com/user-attachments/assets/f2f16d22-731b-4f05-b7d0-f5acf65c53e0" />
 
 > 📸 **[SCREENSHOT]** Tab Charts — Tes B (`localhost`)
 >
-> ![Tes B charts](img/locust-3server-charts.png)
+> <img width="1215" height="826" alt="Screenshot 2026-11-02 233911" src="https://github.com/user-attachments/assets/4abe6363-eb9a-459b-b62d-71ee2e0002e7" />
+
 
 ### 7.4 Prediksi Teoritis
 
@@ -809,13 +818,9 @@ docker compose exec nginx cat /etc/nginx/conf.d/default.conf
 
 Di Locust: **Reset** → **New** → isi parameter yang sama dengan Tes B (Host `http://localhost`, 20 user, ramp up 5, run time 60s) → **Start**.
 
-> 📸 **[SCREENSHOT]** Tab Statistics — Tes C (least connection)
->
-> ![Tes C statistics](img/locust-leastconn-statistics.png)
-
 > 📸 **[SCREENSHOT]** Tab Charts — Tes C (least connection)
 >
-> ![Tes C charts](img/locust-leastconn-charts.png)
+> <img width="1282" height="377" alt="Screenshot 2026-11-02 234849" src="https://github.com/user-attachments/assets/ab4f3cd3-a70e-48e6-be86-e413b5758544" />
 
 ### 8.3 Hasil & Analisis
 
@@ -869,7 +874,8 @@ Hasilnya hanya Server **A** dan **C**, **tanpa error**. Ketika NGINX gagal mengh
 
 > 📸 **[SCREENSHOT]** Output saat Server B dimatikan
 >
-> ![failover](img/failover.png)
+> <img width="1087" height="290" alt="Screenshot 2026-11-03 150455" src="https://github.com/user-attachments/assets/ef119e8c-2458-4f12-9db6-6d8d484f4563" />
+
 
 Nyalakan kembali Server B:
 
