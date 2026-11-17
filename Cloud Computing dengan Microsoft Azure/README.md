@@ -349,11 +349,10 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI...xyz namakamu@laptop
 
 6. Klik **Review + create**. Tunggu validasi lolos, lalu klik **Create**.
 
-> 📸 **[SCREENSHOT]** Halaman Review + create sebelum menekan Create
-
 Setelah deployment selesai (±1–2 menit), klik **Go to resource**. Di halaman **Overview**, catat **Public IP address**. Di modul ini alamat tersebut ditulis sebagai `<IP-VM>`.
 
-> 📸 **[SCREENSHOT]** Halaman Overview VM yang menampilkan Public IP address
+<img width="1193" height="817" alt="Screenshot 2026-11-17 222211" src="https://github.com/user-attachments/assets/ccac410e-500e-46dc-a32d-dc2135a35e0d" />
+
 
 ### 6.5 Login Pertama ke VM
 
@@ -387,7 +386,8 @@ free -h           # RAM
 df -h /           # sisa disk
 ```
 
-> 📸 **[SCREENSHOT]** Berhasil login ke VM dan output perintah di atas
+<img width="621" height="255" alt="Screenshot 2026-11-17 222521" src="https://github.com/user-attachments/assets/4eb31615-cec0-4e67-99f4-d078a6857afb" />
+
 
 ---
 
@@ -481,8 +481,6 @@ Penasaran seberapa sering server publik dicoba login oleh bot? Lihat log-nya:
 ```bash
 sudo journalctl -u ssh --since "1 hour ago" | grep -i "invalid user" | tail -n 10
 ```
-
-> 📸 **[SCREENSHOT]** Output `sshd -T` (dan log percobaan login jika ada)
 
 ---
 
@@ -636,7 +634,8 @@ docker run --rm -p 8501:8501 -e PEMILIK=Andi <username-dockerhub>/dashboard-kopi
 
 Buka <http://localhost:8501>. Kalau dashboard muncul, tekan `Ctrl + C` untuk menghentikan.
 
-> 📸 **[SCREENSHOT]** Dashboard v1 berjalan di localhost
+<img width="695" height="490" alt="Screenshot 2026-11-17 224344" src="https://github.com/user-attachments/assets/4504c4a1-eefa-4f96-895a-327239f37186" />
+
 
 ### 8.7 Push ke Docker Hub
 
@@ -694,7 +693,8 @@ Secara default hanya port 22 yang terbuka. Kita buka port untuk dashboard. Sekal
    - **Name**: `Allow-Dashboard-8501-8510`
 4. Klik **Add**.
 
-> 📸 **[SCREENSHOT]** Daftar inbound rule berisi SSH (22) dan 8501-8510
+<img width="799" height="654" alt="Screenshot 2026-11-17 225432" src="https://github.com/user-attachments/assets/b368c096-70b7-4a6d-90aa-b33e9f600ec7" />
+
 
 ### 8.10 Pull & Run di VM
 
@@ -727,7 +727,6 @@ Buka di browser (dari laptop atau HP): `http://<IP-VM>:8501`
 
 🎉 Dashboard kita sudah online di cloud dan bisa dibuka siapa saja!
 
-> 📸 **[SCREENSHOT]** Dashboard v1 dibuka lewat `http://<IP-VM>:8501`
 
 ### 8.11 Update ke v2 & Rollback
 
@@ -810,7 +809,8 @@ Setelah itu, kembalikan lagi ke `v2` untuk dipakai di bagian selanjutnya.
 
 > 💡 **Kenapa jangan hanya memakai tag `latest`?** Kalau semua versi di-push sebagai `latest`, kita tidak pernah tahu persis versi mana yang sedang berjalan, dan tidak bisa rollback ke versi sebelumnya karena `latest` sudah tertimpa. Tag versi = riwayat yang bisa dipercaya.
 
-> 📸 **[SCREENSHOT]** Dashboard v2 di `http://<IP-VM>:8501`
+<img width="1200" height="988" alt="Screenshot 2026-11-17 230233" src="https://github.com/user-attachments/assets/667ab055-a5e0-4492-badf-995abbba286b" />
+
 
 ---
 
@@ -889,7 +889,8 @@ ssh vm-andi
 
 Prompt akan menunjukkan `budi@vm-modul6:~$`.
 
-> 📸 **[SCREENSHOT]** Budi berhasil login ke VM Andi
+<img width="736" height="219" alt="Screenshot 2026-11-17 231553" src="https://github.com/user-attachments/assets/a13bb4ce-78d6-481c-8acd-eb7e05aa2d43" />
+
 
 ### 9.4 Teman Men-deploy Dashboard-nya Sendiri
 
@@ -920,7 +921,8 @@ Sekarang ada dua dashboard di satu server:
 - `http://<IP-VM-ANDI>:8501` → dashboard Andi
 - `http://<IP-VM-ANDI>:8502` → dashboard Budi
 
-> 📸 **[SCREENSHOT]** Output `docker ps` dengan dua container, dan kedua dashboard terbuka di browser
+<img width="1333" height="276" alt="Screenshot 2026-11-17 231826" src="https://github.com/user-attachments/assets/7cd52c76-dac3-4bdb-aebf-248d2945fdc3" />
+
 
 ### 9.5 Siapa Saja yang Ada di Server?
 
@@ -965,7 +967,8 @@ EOF
 
 Logout lalu login lagi. Pengumuman akan muncul di atas prompt.
 
-> 📸 **[SCREENSHOT]** MOTD muncul saat login
+<img width="675" height="402" alt="Screenshot 2026-11-17 232103" src="https://github.com/user-attachments/assets/1c44e2f0-e93d-4eff-92a0-920510b35c57" />
+
 
 ### 9.7 Proses Lama dengan `tmux`
 
@@ -1058,7 +1061,8 @@ Pastikan setelah beberapa menit tidak ada resource yang tersisa di menu **All re
 
 Buka **Education Hub** di portal. Biasakan mengecek sisa kredit setiap selesai praktikum.
 
-> 📸 **[SCREENSHOT]** Halaman Education Hub yang menampilkan sisa kredit
+<img width="1918" height="910" alt="Screenshot 2026-11-17 234604" src="https://github.com/user-attachments/assets/8dcb0a6d-f4e3-4a18-9594-e4e484e6da36" />
+
 
 ---
 
@@ -1120,4 +1124,4 @@ Pada modul ini kita telah:
 8. Membersihkan resource agar kredit tidak terbuang
 
 *Modul 6 — Cloud Computing dengan Microsoft Azure*
-*Cloud Computing · Teknologi Informasi ITS*
+*Cloud Computing · Zein M Hasan · Teknologi Informasi ITS*
