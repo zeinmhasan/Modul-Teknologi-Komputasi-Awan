@@ -188,7 +188,8 @@ Alurnya:
 3. Setelah selesai, buka **Azure Portal**: <https://portal.azure.com>
 4. Di kolom pencarian atas, ketik **Subscriptions**. Pastikan ada subscription bernama **Azure for Students** dengan status **Active**.
 
-> 📸 **[SCREENSHOT]** Halaman Subscriptions dengan "Azure for Students" berstatus Active
+<img width="1916" height="905" alt="Screenshot 2026-11-17 212331" src="https://github.com/user-attachments/assets/110148bb-0f8a-4f60-9e19-5bb490f9b2c5" />
+
 
 **Cek sisa kredit:** di kolom pencarian portal, ketik **Education**, lalu buka **Education Hub**. Halaman *Overview* menampilkan pemakaian dan sisa kredit.
 
@@ -203,7 +204,8 @@ Cara mengeceknya:
 3. Klik assignment bernama **Allowed resource deployment regions**.
 4. Lihat bagian **Parameters**. Itulah daftar region yang boleh kita pakai.
 
-> 📸 **[SCREENSHOT]** Daftar region pada assignment "Allowed resource deployment regions"
+<img width="1880" height="362" alt="Screenshot 2026-11-17 212617" src="https://github.com/user-attachments/assets/e636122a-bb32-4cd9-84b2-b54758f8c654" />
+
 
 Pilih **satu** region dari daftar tersebut, sebaiknya yang terdekat dengan Indonesia (misalnya *Southeast Asia*, *East Asia*, *Indonesia Central*, atau *Malaysia West* jika tersedia), lalu **catat**. Semua resource di modul ini akan dibuat di region tersebut.
 
@@ -225,6 +227,8 @@ Sebelum membuat resource apa pun, pasang **alarm biaya** dulu supaya tidak ada k
 6. Klik **Create**.
 
 Sekarang kamu akan dapat email kalau pemakaian bulan ini sudah mencapai USD 5 dan USD 9.
+
+<img width="1540" height="336" alt="Screenshot 2026-11-17 213047" src="https://github.com/user-attachments/assets/d377134f-4388-4dd9-b0b1-a21e1c591525" />
 
 > 💡 Untuk subscription yang baru dibuat, fitur Cost Management kadang baru bisa dipakai setelah **±48 jam**. Kalau menu Budgets belum bisa dipakai, lanjutkan dulu praktikumnya dan pasang budget di lain waktu.
 
