@@ -145,27 +145,6 @@ Kita memakai **Consumption plan**, yaitu bayar sesuai pemakaian per detik. Yang 
 - **vCPU-detik** dan **GiB-detik**: berapa CPU dan RAM yang dialokasikan, dikali berapa detik replica berjalan
 - **Jumlah request** HTTP
 
-Kabar baiknya, setiap subscription mendapat **kuota gratis setiap bulan**:
-
-| Meter | Gratis per bulan |
-| :---- | :--------------- |
-| vCPU-detik | **180.000** |
-| GiB-detik (memori) | **360.000** |
-| Request | **2 juta** |
-
-**Latihan hitung:** di modul ini kita akan memakai container berukuran **0,5 vCPU + 1 GiB RAM**.
-
-```
-vCPU   : 180.000 detik ÷ 0,5 vCPU = 360.000 detik = 100 jam
-Memori : 360.000 detik ÷ 1 GiB    = 360.000 detik = 100 jam
-```
-
-Artinya, **satu replica bisa aktif ±100 jam per bulan secara gratis**. Bandingkan dengan VM yang menyala 24 jam × 30 hari = 720 jam ditagih penuh. Dengan **scale to zero**, replica hanya menyala saat ada yang membuka dashboard.
-
-> 💡 Ada juga tarif **idle** (lebih murah) untuk replica yang menyala tapi tidak sedang bekerja. Ini berlaku kalau kita memaksa minimal 1 replica selalu hidup. Kita bahas di [bagian 9](#9-hands-on-4-scaling--scale-to-zero).
->
-> ⚠️ Angka kuota gratis bisa berubah. Selalu cek halaman resminya: <https://azure.microsoft.com/pricing/details/container-apps/>
-
 ---
 
 ## 4. Gambaran Praktikum
