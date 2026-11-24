@@ -21,7 +21,7 @@
 
 ## 1. Pendahuluan
 
-Di Modul 6 kita sudah berhasil men-deploy dashboard ke VM di Azure. Hebat! Tapi coba ingat lagi apa saja yang harus kita kerjakan **sendiri**:
+Di Modul 6 kita sudah berhasil men-deploy dashboard ke VM di Azure. Tapi coba ingat lagi apa saja yang harus kita kerjakan **sendiri**:
 
 1. Membuat VM, memilih ukuran, mengatur disk, dan auto-shutdown
 2. Membuat SSH key, mengatur `~/.ssh/config`, dan memeriksa keamanan SSH
@@ -44,7 +44,6 @@ Di akhir modul, kita akan bisa:
 - Mengatur **autoscaling**, termasuk **scale to zero** supaya tidak ada biaya saat sepi
 - Memberi akses tim dengan **Azure RBAC**, padanan "satu orang satu akun" dari Modul 6
 
-> 💡 Tampilan Azure Portal cukup sering berubah. Kalau nama menu atau tombol sedikit berbeda dari modul ini, cari menu dengan nama yang mirip. Konsepnya tetap sama.
 
 ---
 
@@ -211,7 +210,6 @@ Alurnya:
 4. Kita mengatur **autoscaling** dan melihat replica bertambah saat diserbu request, lalu turun ke **nol** saat sepi.
 5. Kita memberi akses ke teman lewat **Azure RBAC**.
 
-> 💡 Praktikum ini tetap dikerjakan **berpasangan**, seperti Modul 6. Setiap orang membuat Container App di subscription masing-masing, lalu di Hands-on 5 kalian saling memberi akses.
 
 ---
 
@@ -254,7 +252,6 @@ Setiap layanan Azure punya **resource provider**. Di subscription baru, provider
 
 Gunakan **region yang sama** dengan yang sudah kamu catat di Modul 6 (bagian 5.2, daftar *Allowed resource deployment regions*). Region terdekat seperti *Southeast Asia* atau *East Asia* sudah mendukung Container Apps.
 
-> 💡 Kalau region pilihanmu tidak muncul di daftar saat membuat Container App, pilih region lain yang **diizinkan** oleh policy subscription-mu.
 
 ### 5.5 Tools di Laptop
 
