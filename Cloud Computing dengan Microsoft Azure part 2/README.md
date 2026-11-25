@@ -21,7 +21,7 @@
 
 ## 1. Pendahuluan
 
-Di Modul 6 kita sudah berhasil men-deploy dashboard ke VM di Azure. Tapi coba ingat lagi apa saja yang harus kita kerjakan **sendiri**:
+Di Modul 6 kita sudah berhasil men-deploy dashboard ke VM di Azure. Hebat! Tapi coba ingat lagi apa saja yang harus kita kerjakan **sendiri**:
 
 1. Membuat VM, memilih ukuran, mengatur disk, dan auto-shutdown
 2. Membuat SSH key, mengatur `~/.ssh/config`, dan memeriksa keamanan SSH
@@ -44,6 +44,7 @@ Di akhir modul, kita akan bisa:
 - Mengatur **autoscaling**, termasuk **scale to zero** supaya tidak ada biaya saat sepi
 - Memberi akses tim dengan **Azure RBAC**, padanan "satu orang satu akun" dari Modul 6
 
+> 💡 Tampilan Azure Portal cukup sering berubah. Kalau nama menu atau tombol sedikit berbeda dari modul ini, cari menu dengan nama yang mirip. Konsepnya tetap sama.
 
 ---
 
@@ -145,6 +146,27 @@ Kita memakai **Consumption plan**, yaitu bayar sesuai pemakaian per detik. Yang 
 - **vCPU-detik** dan **GiB-detik**: berapa CPU dan RAM yang dialokasikan, dikali berapa detik replica berjalan
 - **Jumlah request** HTTP
 
+Kabar baiknya, setiap subscription mendapat **kuota gratis setiap bulan**:
+
+| Meter | Gratis per bulan |
+| :---- | :--------------- |
+| vCPU-detik | **180.000** |
+| GiB-detik (memori) | **360.000** |
+| Request | **2 juta** |
+
+**Latihan hitung:** di modul ini kita akan memakai container berukuran **0,5 vCPU + 1 GiB RAM**.
+
+```
+vCPU   : 180.000 detik ÷ 0,5 vCPU = 360.000 detik = 100 jam
+Memori : 360.000 detik ÷ 1 GiB    = 360.000 detik = 100 jam
+```
+
+Artinya, **satu replica bisa aktif ±100 jam per bulan secara gratis**. Bandingkan dengan VM yang menyala 24 jam × 30 hari = 720 jam ditagih penuh. Dengan **scale to zero**, replica hanya menyala saat ada yang membuka dashboard.
+
+> 💡 Ada juga tarif **idle** (lebih murah) untuk replica yang menyala tapi tidak sedang bekerja. Ini berlaku kalau kita memaksa minimal 1 replica selalu hidup. Kita bahas di [bagian 9](#9-hands-on-4-scaling--scale-to-zero).
+>
+> ⚠️ Angka kuota gratis bisa berubah. Selalu cek halaman resminya: <https://azure.microsoft.com/pricing/details/container-apps/>
+
 ---
 
 ## 4. Gambaran Praktikum
@@ -158,7 +180,8 @@ Kita memakai **Consumption plan**, yaitu bayar sesuai pemakaian per detik. Yang 
 | **Docker Hub** | Registry tempat image `dashboard-kopi:v1` dan `v2` dari Modul 6 |
 | **Log Analytics** | Menyimpan log aplikasi |
 | **Python** (di laptop) | Menjalankan skrip uji beban sederhana untuk melihat autoscaling |
-| **Azure Cloud Shell** *(bonus)* | Terminal di browser dengan Azure CLI yang sudah terpasang |
+| **ARM template** | File JSON untuk membuat Container Apps Environment jenis Standard |
+| **Azure CLI** *(bonus)* | Mengelola Azure lewat perintah dari terminal laptop |
 
 ### 4.2 Arsitektur Sistem
 
@@ -189,6 +212,7 @@ Alurnya:
 4. Kita mengatur **autoscaling** dan melihat replica bertambah saat diserbu request, lalu turun ke **nol** saat sepi.
 5. Kita memberi akses ke teman lewat **Azure RBAC**.
 
+> 💡 Praktikum ini tetap dikerjakan **berpasangan**, seperti Modul 6. Setiap orang membuat Container App di subscription masing-masing, lalu di Hands-on 5 kalian saling memberi akses.
 
 ---
 
@@ -231,6 +255,7 @@ Setiap layanan Azure punya **resource provider**. Di subscription baru, provider
 
 Gunakan **region yang sama** dengan yang sudah kamu catat di Modul 6 (bagian 5.2, daftar *Allowed resource deployment regions*). Region terdekat seperti *Southeast Asia* atau *East Asia* sudah mendukung Container Apps.
 
+> 💡 Kalau region pilihanmu tidak muncul di daftar saat membuat Container App, pilih region lain yang **diizinkan** oleh policy subscription-mu.
 
 ### 5.5 Tools di Laptop
 
@@ -265,7 +290,101 @@ Gunakan **region yang sama** dengan yang sudah kamu catat di Modul 6 (bagian 5.2
 
 > 💡 **Tags** adalah label bebas untuk resource. Di dunia kerja, tags dipakai untuk menjawab pertanyaan seperti *"resource ini punya siapa?"* dan *"biaya bulan ini paling banyak dari proyek apa?"*. Di **Cost Management**, biaya bisa difilter berdasarkan tag. Ini adalah padanan **MOTD** dari Modul 6: informasi pemilik yang menempel langsung di resource-nya.
 
-### 6.2 Membuat Container App
+### 6.2 Membuat Container Apps Environment (Standard)
+
+Azure sekarang punya **dua jenis** Container Apps Environment:
+
+| Jenis | Kelebihan | Kekurangan untuk praktikum ini |
+| :---- | :-------- | :----------------------------- |
+| **Standard** | Fitur lengkap: revision suffix, multiple revision, traffic splitting, label, custom scale rule, metrics | Butuh beberapa menit untuk dibuat |
+| **Express** (preview) | Dibuat dalam hitungan detik, cold start sangat cepat | Hanya **single revision**, **tidak bisa** memakai revision suffix maupun traffic splitting, dan custom scale rule masih dalam pengembangan |
+
+Hands-on 3 dan 4 **membutuhkan environment Standard**. Supaya pasti mendapat jenis yang benar, kita membuat environment dengan **template ARM**: sebuah file JSON yang menjelaskan resource apa saja yang ingin dibuat. Cukup lewat portal, tanpa install apa pun.
+
+> 💡 Ini juga perkenalan pertama kita dengan **Infrastructure as Code (IaC)**: infrastruktur ditulis sebagai kode, sehingga bisa disimpan, dibagikan, dan dijalankan ulang dengan hasil yang sama persis.
+
+1. Di kolom pencarian portal, ketik **Deploy a custom template**, lalu buka.
+2. Klik **Build your own template in the editor**.
+3. Hapus isi editor, lalu tempel template berikut:
+
+   ```json
+   {
+     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+     "contentVersion": "1.0.0.0",
+     "parameters": {
+       "location": {
+         "type": "string",
+         "defaultValue": "[resourceGroup().location]"
+       }
+     },
+     "resources": [
+       {
+         "type": "Microsoft.OperationalInsights/workspaces",
+         "apiVersion": "2022-10-01",
+         "name": "log-modul7",
+         "location": "[parameters('location')]",
+         "properties": {
+           "sku": { "name": "PerGB2018" },
+           "retentionInDays": 30
+         }
+       },
+       {
+         "type": "Microsoft.App/managedEnvironments",
+         "apiVersion": "2026-07-01",
+         "name": "cae-modul7",
+         "location": "[parameters('location')]",
+         "dependsOn": [
+           "[resourceId('Microsoft.OperationalInsights/workspaces', 'log-modul7')]"
+         ],
+         "properties": {
+           "environmentMode": "WorkloadProfiles",
+           "appLogsConfiguration": {
+             "destination": "log-analytics",
+             "logAnalyticsConfiguration": {
+               "customerId": "[reference(resourceId('Microsoft.OperationalInsights/workspaces', 'log-modul7'), '2022-10-01').customerId]",
+               "sharedKey": "[listKeys(resourceId('Microsoft.OperationalInsights/workspaces', 'log-modul7'), '2022-10-01').primarySharedKey]"
+             }
+           },
+           "workloadProfiles": [
+             { "name": "Consumption", "workloadProfileType": "Consumption" }
+           ]
+         }
+       }
+     ]
+   }
+   ```
+
+   Template ini membuat dua resource: **Log Analytics workspace** `log-modul7` dan **Container Apps Environment** `cae-modul7` (jenis **Standard**, hanya dengan profile **Consumption**). Lokasinya otomatis mengikuti region resource group.
+
+   Baris terpenting adalah `"environmentMode": "WorkloadProfiles"`. Kalau baris ini tidak ditulis, di beberapa region (misalnya *East Asia*) Azure akan membuat environment **Express** secara default.
+
+4. Klik **Save**.
+5. Di halaman **Basics**:
+   - **Subscription**: Azure for Students
+   - **Resource group**: `rg-modul7`
+   - **Region** dan **Location**: biarkan (mengikuti resource group)
+6. Klik **Review + create → Create**. Tunggu ±3–5 menit sampai muncul *Your deployment is complete*.
+7. Buka **rg-modul7**. Sekarang ada `cae-modul7` dan `log-modul7`.
+8. **Verifikasi jenis environment:** buka `cae-modul7`, lalu di halaman **Overview** klik **JSON View** (pojok kanan atas bagian *Essentials*). Di dropdown **API version**, pilih versi **paling baru** (paling atas), karena versi lama tidak menampilkan jenis environment. Tekan `Ctrl + F` dan cari **`environmentMode`**. Nilainya harus **`"WorkloadProfiles"`** (Standard) ✅. Kalau nilainya **`"Express"`**, environment tersebut tidak bisa dipakai untuk Hands-on 3 dan 4.
+
+> ⚠️ Kalau sebelumnya sudah ada environment **Express** bernama `cae-modul7` di resource group yang sama, template **tidak** akan mengubahnya menjadi Standard. Hapus dulu Container App dan environment Express tersebut (atau hapus seluruh `rg-modul7` lalu buat ulang), baru deploy template.
+
+> ⚠️ Jangan menambahkan workload profile **Dedicated** ke environment ini. Profile Dedicated ditagih per jam seperti VM, walaupun tidak ada aplikasi yang berjalan. Untuk praktikum ini **cukup Consumption**.
+
+<details>
+<summary><b>Alternatif: lewat Azure CLI</b></summary>
+
+Kalau Azure CLI sudah terpasang di laptop ([bagian 11](#11-bonus-semua-lewat-azure-cli)), environment Standard juga bisa dibuat dengan:
+
+```bash
+az containerapp env create -n cae-modul7 -g rg-modul7 -l southeastasia
+```
+
+Ganti `southeastasia` dengan region milikmu (format huruf kecil tanpa spasi). Setelah itu tetap **verifikasi** `environmentMode` lewat JSON View seperti langkah 8.
+
+</details>
+
+### 6.3 Membuat Container App
 
 1. Di kolom pencarian portal, ketik **Container Apps**, lalu klik **+ Create → Container App**.
 
@@ -277,24 +396,12 @@ Gunakan **region yang sama** dengan yang sudah kamu catat di Modul 6 (bagian 5.2
    | Resource group | `rg-modul7` |
    | Container app name | `andi-dashboard` (prefix namamu, huruf kecil) |
    | Deployment source | **Container image** |
-   | Region | **Sama** dengan region Resource Group |
-   | Container Apps environment | Klik **Create new** (lihat langkah 3) |
+   | Region | **Sama** dengan region environment |
+   | Container Apps environment | Pilih **`cae-modul7`** yang sudah dibuat di 6.2. **Jangan** klik *Create new* |
 
-3. Di panel **Create Container Apps environment**:
+   > ⚠️ Kalau `cae-modul7` tidak muncul di daftar, pastikan region yang dipilih sama dengan region resource group. **Jangan** biarkan portal membuat environment baru secara otomatis, karena environment buatan portal bisa berjenis **Express**.
 
-   | Tab | Field | Isi |
-   | :-- | :---- | :-- |
-   | Basics | Environment name | `cae-modul7` |
-   | Basics | Zone redundancy | **Disabled** |
-   | Workload profiles | | Biarkan default. Pastikan hanya ada profile **Consumption**. **Jangan** menambah profile *Dedicated* |
-   | Monitoring | Logs destination | **Azure Log Analytics**, lalu buat workspace baru, misal `log-modul7` |
-   | Networking | | Biarkan default (akses publik) |
-
-   Klik **Create** untuk menutup panel.
-
-   > ⚠️ Profile **Dedicated** ditagih per jam seperti VM, walaupun tidak ada aplikasi yang berjalan. Untuk praktikum ini **cukup Consumption**.
-
-4. Tab **Container**:
+3. Tab **Container**:
 
    | Field | Isi |
    | :---- | :-- |
@@ -309,7 +416,7 @@ Gunakan **region yang sama** dengan yang sudah kamu catat di Modul 6 (bagian 5.2
 
    Perhatikan bahwa `-e PEMILIK=Andi` dari Modul 6 sekarang diisi lewat formulir. Konsepnya sama persis.
 
-5. Tab **Ingress**:
+4. Tab **Ingress**:
 
    | Field | Isi |
    | :---- | :-- |
@@ -321,11 +428,11 @@ Gunakan **region yang sama** dengan yang sudah kamu catat di Modul 6 (bagian 5.2
 
    **Target port** adalah port **di dalam container**, sama seperti angka kanan di `-p 8501:8501`. Bedanya, di sini kita **tidak perlu** memilih port di sisi "server", karena Azure yang mengurus pintu masuknya (port 443/HTTPS).
 
-6. Klik **Review + create**, tunggu validasi lolos, lalu klik **Create**.
+5. Klik **Review + create**, tunggu validasi lolos, lalu klik **Create**.
 
-Deployment pertama butuh **±3–5 menit**, karena Azure juga sedang membuat environment dan Log Analytics workspace. Setelah selesai, klik **Go to resource**.
+Deployment butuh **±1–2 menit**. Setelah selesai, klik **Go to resource**.
 
-### 6.3 Buka Dashboard Lewat HTTPS
+### 6.4 Buka Dashboard Lewat HTTPS
 
 Di halaman **Overview**, cari **Application Url**. Bentuknya kira-kira seperti ini:
 
@@ -353,20 +460,22 @@ Tidak ada SSH bukan berarti kita "buta". Container Apps menyediakan cara lain un
 
 Di Modul 6, untuk mengganti `PEMILIK` kita harus `docker rm -f` lalu `docker run` lagi. Sekarang:
 
-1. Di menu kiri Container App, pilih **Application → Containers** (atau **Revisions and replicas**), lalu klik **Edit and deploy**.
-2. Di bagian **Revision details**, isi **Name / Suffix**: `v1b`.
-3. Di tabel **Container image**, klik container `dashboard`, lalu buka bagian **Environment variables**.
+1. Di menu kiri Container App, buka **App → Revisions and replicas**, lalu klik **+ Create new revision** di toolbar atas.
+2. Di halaman pembuatan revision, isi **Name / Suffix**: `v1b`.
+3. Di tabel **Container image**, klik container `dashboard`, lalu buka bagian/tab **Environment variables**.
 4. Ubah nilai `PEMILIK` menjadi, misalnya, `Andi - Tim Data Kopi`.
 5. Klik **Save**, lalu **Create**.
 
+> 💡 **Cara cepat (tanpa suffix):** buka **App → Containers**, pilih tab **Environment variables**, ubah nilainya, lalu klik **Save as a new revision** di bagian bawah. Hasilnya sama, tetapi nama revision dibuat otomatis oleh Azure (berupa kode acak, misalnya `andi-dashboard--0000002`). Di modul ini kita memakai **Create new revision** supaya nama revision mudah dikenali.
+
 Tunggu ±1 menit, lalu refresh dashboard. Caption sekarang berubah, padahal **image tidak di-build ulang**.
 
-Sekarang buka **Application → Revisions and replicas**:
+Sekarang kembali ke **App → Revisions and replicas**:
 
-| Revision | Status | Traffic |
-| :------- | :----- | :------ |
-| `andi-dashboard--v1b` | Active, Running | 100% |
-| `andi-dashboard--v1` | Inactive (centang *Show inactive revisions*) | 0% |
+| Tab | Revision | Status | Traffic |
+| :-- | :------- | :----- | :------ |
+| **Active revisions** | `andi-dashboard--v1b` | Running | 100% |
+| **Inactive revisions** | `andi-dashboard--v1` | Inactive | 0% |
 
 Karena mengubah environment variable termasuk perubahan **revision-scope**, Azure membuat **revision baru** dan memindahkan traffic ke sana. Revision lama otomatis dinonaktifkan **setelah** revision baru siap, jadi **tidak ada downtime**.
 
@@ -427,14 +536,14 @@ Di bagian ini kita memakai mode **Multiple**.
 
 ### 8.2 Mengubah ke Multiple Revision Mode
 
-1. Buka **Application → Revisions and replicas**.
-2. Klik **Choose revision mode** (atau *Revision mode*), pilih **Multiple**, lalu **Apply**.
+1. Buka **App → Revisions and replicas**.
+2. Klik **Deployment mode** di toolbar atas, pilih **Multiple**, lalu **Apply**.
 
 Mengubah revision mode termasuk perubahan **application-scope**, jadi tidak membuat revision baru.
 
 ### 8.3 Merilis v2 sebagai Revision Baru
 
-1. Klik **Edit and deploy**.
+1. Masih di **Revisions and replicas**, klik **+ Create new revision**.
 2. **Name / Suffix**: `v2`
 3. Klik container `dashboard`, lalu ubah **Image and tag** menjadi `<username-dockerhub>/dashboard-kopi:v2`. Biarkan environment variable apa adanya.
 4. Klik **Save**, lalu **Create**.
@@ -507,7 +616,7 @@ Pola ini adalah dasar dari **blue-green deployment**: versi baru disiapkan dan d
 
 1. Atur traffic: `v1b` = **0**, `v2` = **100**, lalu **Save**.
 2. Pada baris `andi-dashboard--v1b`, klik **⋯ → Deactivate**.
-3. Ubah revision mode kembali ke **Single**.
+3. Klik **Deployment mode**, lalu ubah kembali ke **Single**.
 
 > 💡 Revision yang **inactive** tidak ditagih, tetapi tetap tersimpan dan bisa diaktifkan lagi kapan pun. Container Apps menyimpan hingga 100 revision inactive terakhir.
 
@@ -553,9 +662,9 @@ Jeda itu adalah **cold start**: Azure harus menyalakan replica baru, menjalankan
 
 Supaya autoscaling mudah terlihat di praktikum, kita pakai batas yang **sengaja dibuat kecil**.
 
-1. Di menu kiri, pilih **Application → Scale** (atau **Scale and replicas**), lalu klik **Edit and deploy**.
-2. **Name / Suffix** (di tab *Basics*/*Revision details*): `v2-scale`
-3. Tab **Scale**:
+1. Buka **App → Revisions and replicas**, lalu klik **+ Create new revision**.
+2. **Name / Suffix**: `v2-scale`
+3. Buka tab **Scale**:
    - **Min replicas**: `0`
    - **Max replicas**: `3`
 4. Pada bagian scale rule, edit rule HTTP yang sudah ada (atau klik **Add**):
@@ -619,7 +728,7 @@ python beban.py https://andi-dashboard.<kata-acak>.<region>.azurecontainerapps.i
 
 Selama skrip berjalan, buka di portal:
 
-- **Application → Revisions and replicas** → klik revision `v2-scale` → lihat daftar **Replicas**, atau
+- **App → Revisions and replicas** → tab **Replicas** (klik **Refresh** beberapa kali), atau
 - **Monitoring → Metrics** → **Replica Count** dan **Requests**, rentang waktu **Last 30 minutes**
 
 Replica seharusnya naik dari 0/1 menjadi **2 lalu 3** dalam waktu kurang dari satu menit. Setelah skrip selesai, tunggu beberapa menit. Replica akan turun lagi, dan akhirnya kembali ke **0**.
@@ -688,7 +797,7 @@ Kerjakan **berpasangan**. Contoh: **Andi** memberi akses ke **Budi**, lalu tukar
 
 1. Buka **Resource groups**. Kalau `rg-modul7` milik Andi belum terlihat, ubah filter subscription menjadi **All subscriptions** (atau buka *Settings → Directories + subscriptions* dan pastikan subscription Andi tercentang).
 2. Buka Container App `andi-dashboard`. Budi bisa melihat **Overview**, **Revisions**, dan **Metrics**.
-3. Coba ubah traffic di **Revisions and replicas**, atau klik **Edit and deploy**. Seharusnya **ditolak**, karena role Reader tidak boleh mengubah apa pun.
+3. Coba ubah traffic di **Revisions and replicas**, atau klik **Create new revision**. Seharusnya **ditolak**, karena role Reader tidak boleh mengubah apa pun.
 
 <!-- 📸 SCREENSHOT: pesan error/akses ditolak saat Budi (Reader) mencoba mengubah sesuatu -->
 
@@ -716,17 +825,35 @@ Inilah alasan yang sama dengan `last -n 10` di Modul 6: kalau semua orang memaka
 
 Semua yang kita lakukan lewat klik di portal juga bisa dilakukan lewat **perintah**. Ini penting, karena perintah bisa **disimpan, diulang, dan diotomatisasi** (misalnya oleh CI/CD di modul berikutnya).
 
-### 11.1 Membuka Cloud Shell
+### 11.1 Memasang Azure CLI di Laptop
 
-1. Di bagian atas portal, klik ikon **Cloud Shell** (`>_`).
-2. Pilih **Bash**.
-3. Kalau ditanya soal storage, pilih **No storage account required** (supaya tidak membuat resource tambahan), lalu pilih subscription **Azure for Students**.
+Azure punya terminal di browser bernama **Cloud Shell** (ikon `>_` di portal), tetapi banyak tenant kampus **menonaktifkannya**. Karena itu kita pasang **Azure CLI** langsung di laptop. CLI ini juga akan berguna untuk modul CI/CD berikutnya.
 
-Pasang/update extension Container Apps:
+Windows (PowerShell):
+
+```powershell
+winget install -e --id Microsoft.AzureCLI
+```
+
+macOS:
 
 ```bash
+brew install azure-cli
+```
+
+Linux (Ubuntu/Debian): ikuti petunjuk di <https://learn.microsoft.com/cli/azure/install-azure-cli-linux>
+
+**Tutup lalu buka lagi** terminal, kemudian login dan pasang extension Container Apps:
+
+```powershell
+az login
+az account show -o table
 az extension add --name containerapp --upgrade
 ```
+
+`az login` akan membuka browser. Login dengan **email kampus**. Kalau diminta memilih subscription, pilih **Azure for Students**.
+
+> 💡 Perintah di bawah ditulis dalam format **Bash** (variabel `RG=...`, baris disambung dengan `\`). Di **PowerShell**, tulis variabel sebagai `$RG = "rg-modul7"` dan sambung baris dengan backtick `` ` ``, atau tulis setiap perintah dalam satu baris.
 
 ### 11.2 Perintah-perintah Berguna
 
@@ -828,6 +955,9 @@ Buka **Education Hub** dan bandingkan pemakaian kredit Modul 6 dan Modul 7. Mana
 | Masalah | Solusi |
 | :------ | :----- |
 | Error `MissingSubscriptionRegistration` atau *"subscription is not registered to use namespace Microsoft.App"* | Daftarkan resource provider `Microsoft.App` dan `Microsoft.OperationalInsights` (lihat [5.3](#53-daftarkan-resource-provider)) |
+| Error *"Revision Suffix is not supported for container app ... on express environments"* (`ExpressRevisionSuffixNotSupported`) | Container App kamu berada di environment **Express**, yang hanya mendukung single revision tanpa suffix dan traffic splitting. Environment tidak bisa diubah dari Express ke Standard. Cara paling bersih: hapus seluruh `rg-modul7`, buat ulang resource group, deploy template ([6.2](#62-membuat-container-apps-environment-standard)), **verifikasi lewat JSON View** (API version terbaru) bahwa `environmentMode` bernilai `WorkloadProfiles`, lalu buat ulang Container App dan pilih environment itu |
+| *"Cloud Shell has been disabled in directory ..."* | Admin tenant kampus menonaktifkan Cloud Shell, dan mahasiswa tidak bisa mengaktifkannya sendiri. Buat environment dengan template ([6.2](#62-membuat-container-apps-environment-standard)) dan pakai Azure CLI di laptop ([11.1](#111-memasang-azure-cli-di-laptop)) |
+| Deploy template gagal (*"The template deployment failed"*) | Buka detail error di halaman deployment. Penyebab umum: region tidak diizinkan policy (`RequestDisallowedByAzure`), resource provider `Microsoft.App`/`Microsoft.OperationalInsights` belum *Registered* ([5.3](#53-daftarkan-resource-provider)), atau nama `cae-modul7` sudah dipakai di resource group yang sama |
 | Error `RequestDisallowedByAzure` | Region tidak diizinkan untuk subscription-mu. Pakai region dari daftar policy (Modul 6 bagian 5.2) |
 | Revision berstatus **Failed** / **Activation failed** | Buka **Log stream** atau klik revision → lihat *System logs*. Penyebab umum: nama image/tag salah, `Registry login server` bukan `docker.io`, atau target port bukan `8501` |
 | Log berisi `exec format error` | Image di-build untuk Arm (Mac M-series). Build ulang dengan `--platform linux/amd64` lalu push lagi |
@@ -871,7 +1001,7 @@ Pemilik kedai senang dengan dashboard dari Modul 6, tapi ada keluhan: *"Kenapa a
    4. Sebutkan **satu** kasus di mana kamu tetap akan memilih **VM** dibanding Container Apps, dan alasannya.
 9. Setelah dinilai, **hapus Resource Group** dan screenshot halaman sisa kredit di Education Hub.
 
-**Bonus (opsional):** lakukan langkah 4 (rilis v2 dan traffic splitting) sepenuhnya lewat **Azure CLI** di Cloud Shell, dan lampirkan screenshot perintah beserta output-nya.
+**Bonus (opsional):** lakukan langkah 4 (rilis v2 dan traffic splitting) sepenuhnya lewat **Azure CLI** di laptop, dan lampirkan screenshot perintah beserta output-nya.
 
 ---
 
